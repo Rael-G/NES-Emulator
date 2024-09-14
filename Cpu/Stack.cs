@@ -1,6 +1,6 @@
 namespace Cpu;
 
-public class Stack
+internal class Stack
 {
     private const int StackBegin = 0x100;
     private const int StackPointerBegin = 0xFD;

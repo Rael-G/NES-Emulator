@@ -1,6 +1,6 @@
 namespace Cpu;
 
-public static class Status
+internal static class Status
 {
     public static StatusFlag Flags { get; set; }
 

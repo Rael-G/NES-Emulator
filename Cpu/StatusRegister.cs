@@ -1,7 +1,7 @@
 namespace Cpu;
 
 [Flags]
-public enum StatusFlag
+internal enum StatusFlag
 {
     None = 0,
     

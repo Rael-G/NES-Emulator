@@ -1,9 +1,9 @@
 namespace Cpu;
 
-public delegate byte Operation();
-public delegate byte AddressingMode();
+internal delegate byte Operation();
+internal delegate byte AddressingMode();
 
-public struct Instruction(string name, Operation operation, AddressingMode addressingMode, int cycles)
+internal struct Instruction(string name, Operation operation, AddressingMode addressingMode, int cycles)
 {
     public string Name = name;
     public Operation Operation = operation;
