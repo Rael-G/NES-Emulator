@@ -568,11 +568,80 @@ public partial class Cpu
         return 0;
     }
 
-    private byte PLP() => throw new NotImplementedException();
-    private byte ROL() => throw new NotImplementedException();
-    private byte ROR() => throw new NotImplementedException();
-    private byte RTI() => throw new NotImplementedException();
-    private byte RTS() => throw new NotImplementedException();
+    /// <summary>
+    /// Pop Status Register off Stack, Flags N, Z
+    /// </summary>
+    /// <returns></returns>
+    private byte PLP()
+    {
+        Status.Flags = (StatusFlag)Stack.Pop();
+        Status.SetFlag(StatusFlag.U, true);
+
+        return 0;
+    }
+
+    /// <summary>
+    /// Rotate Left, Flags C, N, Z
+    /// </summary>
+    /// <returns></returns>
+    private byte ROL()
+    {
+        var result = Fetch << 1 | Status.GetFlag(StatusFlag.C);
+        Status.SetFlag(StatusFlag.C, BitHelper.HasFlag(result, 0xFF00));
+        Status.SetZeroAndNegative(result);
+
+        if (CurrentInstruction.AddressingMode == IMP)
+        {
+            A = (byte)result;
+            return 0;
+        }
+
+        Memory.Write(Address, (byte)result);
+        return 0;
+    }
+
+    /// <summary>
+    /// Rotate Left, Flags C, N, Z
+    /// </summary>
+    /// <returns></returns>
+    private byte ROR()
+    {
+        var result = Status.GetFlag(StatusFlag.C) << 7 | Fetch >> 1;
+        Status.SetFlag(StatusFlag.C, BitHelper.HasFlag(Fetch, 1));
+        Status.SetZeroAndNegative(result);
+
+        if (CurrentInstruction.AddressingMode == IMP)
+        {
+            A = (byte)result;
+            return 0;
+        }
+
+        Memory.Write(Address, (byte)result);
+        return 0;
+    }
+
+    /// <summary>
+    /// Return from Interrupt
+    /// </summary>
+    /// <returns></returns>
+    private byte RTI()
+    {
+        Status.Flags = (StatusFlag)Stack.Pop();
+        Status.SetFlag(StatusFlag.B | StatusFlag.U, false);
+
+        PC = Stack.Pop16();
+        return 0;
+    }
+
+    /// <summary>
+    /// Return from Subroutine
+    /// </summary>
+    /// <returns></returns>
+    private byte RTS()
+    {
+        PC = Stack.Pop16();
+        return 0;
+    }
 
     /// <summary>
     /// Subtraction with Borrow In, A = A - M - (1 - C), Flags C, V, N, Z
@@ -593,18 +662,133 @@ public partial class Cpu
         return 1;
     }
 
-    private byte SEC() => throw new NotImplementedException();
-    private byte SED() => throw new NotImplementedException();
-    private byte SEI() => throw new NotImplementedException();
-    private byte STA() => throw new NotImplementedException();
-    private byte STX() => throw new NotImplementedException();
-    private byte STY() => throw new NotImplementedException();
-    private byte TAX() => throw new NotImplementedException();
-    private byte TAY() => throw new NotImplementedException();
-    private byte TSX() => throw new NotImplementedException();
-    private byte TXA() => throw new NotImplementedException();
-    private byte TXS() => throw new NotImplementedException();
-    private byte TYA() => throw new NotImplementedException();
+    /// <summary>
+    /// Set Carry Flag
+    /// </summary>
+    /// <returns></returns>
+    private byte SEC()
+    {
+        Status.SetFlag(StatusFlag.C, true);
+        return 0;
+    }
 
-    private byte ERR() => throw new NotImplementedException();
+    /// <summary>
+    /// Set Decimal Flag
+    /// </summary>
+    /// <returns></returns>
+    private byte SED()
+    {
+        Status.SetFlag(StatusFlag.D, true);
+        return 0;
+    }
+
+    /// <summary>
+    /// Set Interrupt Flag
+    /// </summary>
+    /// <returns></returns>
+    private byte SEI()
+    {
+        Status.SetFlag(StatusFlag.I, true);
+        return 0;
+    }
+
+    /// <summary>
+    /// Store Accumulator at Address
+    /// </summary>
+    /// <returns></returns>
+    private byte STA()
+    {
+        Memory.Write(Address, A);
+        return 0;
+    }
+
+    /// <summary>
+    /// Store X Register at Address
+    /// </summary>
+    /// <returns></returns>
+    private byte STX()
+    {
+        Memory.Write(Address, X);
+        return 0;
+    }
+
+    /// <summary>
+    /// Store Y Register at Address
+    /// </summary>
+    /// <returns></returns>
+    private byte STY()
+    {
+        Memory.Write(Address, Y);
+        return 0;
+    }
+
+    /// <summary>
+    /// Transfer Accumulator to X Register, Flags N, Z
+    /// </summary>
+    /// <returns></returns>
+    private byte TAX()
+    {
+        X = A;
+        Status.SetZeroAndNegative(X);
+        return 0;
+    }
+
+    /// <summary>
+    /// Transfer Accumulator to Y Register, Flags N, Z
+    /// </summary>
+    /// <returns></returns>
+    private byte TAY()
+    {
+        Y = A;
+        Status.SetZeroAndNegative(X);
+        return 0;
+    }
+    /// <summary>
+    /// Transfer Stack Pointer to X Register
+    /// </summary>
+    /// <returns></returns>
+    private byte TSX()
+    {
+        X = Stack.Pointer;
+        Status.SetZeroAndNegative(X);
+        return 0;
+    }
+
+    /// <summary>
+    /// Transfer X Register to Accumulator, Flags N, Z
+    /// </summary>
+    /// <returns></returns>
+    private byte TXA()
+    {
+        A = X;
+        Status.SetZeroAndNegative(A);
+        return 0;
+    }
+
+    /// <summary>
+    /// Transfers X Register to Stack Pointer
+    /// </summary>
+    /// <returns></returns>
+    private byte TXS()
+    {
+        Stack.Pointer = X;
+        return 0;
+    }
+
+    /// <summary>
+    /// Transfer Y Register to Accumulator, Flags N, Z
+    /// </summary>
+    /// <returns></returns>
+    private byte TYA()
+    {
+        A = Y;
+        Status.SetZeroAndNegative(A);
+        return 0;
+    }
+
+    /// <summary>
+    /// Ilegal opcodes
+    /// </summary>
+    /// <returns></returns>
+    private byte ERR() => 0;
 }

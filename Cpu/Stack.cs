@@ -2,10 +2,10 @@ namespace Cpu;
 
 internal class Stack
 {
+    public static byte Pointer { get; set; } = StackPointerBegin;
+
     private const int StackBegin = 0x100;
     private const int StackPointerBegin = 0xFD;
-
-    private static byte Pointer = StackPointerBegin;
 
     public static void Reset() => Pointer = StackPointerBegin;
 
